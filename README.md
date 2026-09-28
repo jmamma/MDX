@@ -10,6 +10,7 @@ MDX is independently developed with permission from Elektron. Please direct MDX 
 
 | Firmware | Release date | Download |
 | --- | --- | --- |
+| X.14 | 2026-09-28 | [ZIP](firmware/mdx/X.14/Machinedrum_SPS1-UW_OS_X.14.zip) |
 | X.13 | 2026-07-12 | [ZIP](firmware/mdx/X.13/Machinedrum_SPS1-UW_OS_X.13.zip) |
 | X.12 | 2025-10-01 | [ZIP](firmware/mdx/X.12/Machinedrum_SPS1-UW_OS_X.12.zip) |
 | X.11 | 2024-11-11 | [ZIP](firmware/mdx/X.11/Machinedrum_SPS1-UW_OS_X.11.zip) |
