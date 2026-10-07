@@ -1,0 +1,378 @@
+MDX 2.0 Pattern and Kit System Exclusive Dump description
+=========================================================
+
+Conventions
+-----------
+
+Bits, tracks and steps are numbered from zero.
+7-bit MIDI values are called data; unpacked 8-bit values are called bytes.
+Positions are hexadecimal; counts are decimal unless prefixed with 0x.
+Kit Message and Pattern Message positions count from F0 at offset zero.
+Unpacked structures use their own starting points, specified below.
+Unpacked multi-byte integers are big-endian, except compact LFO state.
+The Machinedrum header's <base> field is normally 0x00.
+
+Checksum and length
+
+Checksum: sum of the indicated MIDI data & 0x3FFF.
+Length: Version through Checksum (bit 0...6), inclusive.
+Both fields use two 7-bit data, most significant first.
+
+  Message       Checksum data positions       Message length
+  -------------------------------------------------------------
+  Kit 65.1      0x009 ... 0x492               1166 (0x09, 0x0E)
+  Pattern 64.1  0x009 ... 0x009+N             N+5
+
+7-bit encoding
+
+Each group is a mask followed by up to seven low-seven-bit data.
+Mask bits 6...0 carry bytes 0...6's MSBs; unused bits are zero.
+Each packed block starts a new group. Exclude MIDI realtime bytes
+from messages, checksums and lengths.
+
+
+Kit Message
+===========
+
+Complete message: 1176 bytes including F0/F7.
+
+  Pos           Data                                   Description
+  --------------------------------------------------------------------------------
+  0x000         0xF0 0x00 0x20 0x3C 0x02 <base>        Machinedrum header
+  0x006         0x52                                   Kit message
+  0x007         0x41                                   Version
+  0x008         0x01                                   Revision
+  0x009         [0x00 ... 0x3F], >=0x40=workspace      Original position
+  0x00A         16 x ASCII                             Kitname, zero padded
+  0x01A+0x26*t  38 x [0 ... 127], t=0...15             Parameters track t+1
+  0x27A         16 x [0 ... 127]                       Level track 1...16
+  0x28A         74 data (7-bit encoding)               Selected Drum Model
+  0x2D4         165 data (7-bit encoding)              LFO-A settings
+  0x379         8 x [0 ... 127]                        Reverb settings
+  0x381         8 x [0 ... 127]                        Delay settings
+  0x389         8 x [0 ... 127]                        EQ settings
+  0x391         8 x [0 ... 127]                        Dynamics settings
+  0x399         37 data (7-bit encoding)               Trig/mute groups
+  0x3BE         165 data (7-bit encoding)              LFO-B settings
+  0x463         16 x [0...6, 127=GLOBAL]               Kit output routing
+  0x473         24 x [0 ... 127]                       Reserved
+  0x48B         8 x [0 ... 127]                        Reserved
+  0x493         [0 ... 127]                            Checksum (bit 7...13)
+  0x494         [0 ... 127]                            Checksum (bit 0...6)
+  0x495         0x09                                   Message length (bit 7...13)
+  0x496         0x0E                                   Message length (bit 0...6)
+  0x497         0xF7                                   End of SysEx
+
+Reserved fields: preserve on round-trip; initialize 0x473...0x492 to 64.
+
+Selected Drum Model
+
+Unpacked: 16 x 4-byte integers.
+Offsets count from the first unpacked model; bit numbers are within
+each 32-bit integer.
+
+  Pos           Value                                  Description
+  ----------------------------------------------------------------------------------
+  4*t           Bits 0...7: model ID, t=0...15         Machine on track t+1
+                Bit 17: TONAL                          0=DEFAULT, 1=tonal enabled
+                Bit 18: octave down                    One octave below TONAL
+                Bit 19: octave up                      One octave above TONAL
+                Other bits: zero
+
+The tuning flags are 0x00000 for DEFAULT, 0x20000 for TONAL, 0x60000
+for TONAL-1, and 0xA0000 for TONAL+1. OR these with the model ID.
+Bits 18/19 require bit 17. Both octave bits set select ordinary TONAL.
+LEGACY/MDX export retains tonal on/off but omits the octave flags.
+
+Machine numbers: see "SYSEX assign machine" in the X.20 release notes.
+For entries with c=1, add 128 to the machine number before storing it
+in bits 0...7.
+USR-01...USR-16 therefore use model IDs 0xC2...0xD1 in kit dumps.
+
+Track Parameters
+
+Decimal IDs, shared with pattern locks; not MIDI CC numbers.
+
+  ID            Value                                  Description
+  ----------------------------------------------------------------------------------------
+  0...7         [0 ... 127]                            Machine synthesis parameters
+  8...15        [0 ... 127]                            AMD,AMF,EQF,EQG,FLTF,FLTW,FLTQ,SRR
+  16...23       [0 ... 127]                            DIST,VOL,PAN,DEL,REV,LFOS,LFOD,LFOM
+  24...27       [0 ... 127]                            ATTK,HOLD,DEC,EVMIX/EVDEP
+  28...30       [0 ... 127]                            LFO-B SPEED,DEPTH,SHMIX
+  31            0=OFF, 1...126, 127=INF                RTRG
+  32            [0 ... 14]                             RTIM
+  33            0=OFF, 1=ON                            RENV
+  34...36       [0 ... 127], default 0                 Reserved
+  37            0=AMP, 1=FLTF, 2=FLTW                  Envelope destination
+
+  RTIM          Interval       RTIM  Interval       RTIM  Interval
+  ----------------------------------------------------------------
+  0             1/384          5     1/48           10    1/8
+  1             1/192          6     1/32           11    1/6
+  2             1/128          7     1/24           12    1/4
+  3             1/96           8     1/16           13    1/3
+  4             1/64           9     1/12           14    1/2
+
+LFO Settings
+
+Unpacked: 16 x 9-byte records in track order. Offsets count from the
+start of each record, for both LFO-A and LFO-B.
+
+  Pos           Value                                  Description
+  -----------------------------------------------------------------------------
+  0x00          [0...15], 16=DLY,17=REV,18=EQ,19=DYN   Destination track/effect
+  0x01          Track: ID 0...33; effect: 0...7        Destination parameter
+  0x02          [0 ... 10]                             Shape 1
+  0x03          [0 ... 10]                             Shape 2
+  0x04          3*rate_group + mode, plus flags        LFO type
+  0x05          4 bytes                                Compact internal state
+
+  Mode          Value   State bytes 0x05...0x08
+  -----------------------------------------------------------------------------
+  FREE          0       Little-endian uint16 phase [0...0x7FFF], then two zeros
+  TRIG          1       Four zeros
+  HOLD          2       Two little-endian int16 held values
+  ONE           1+0x20  As FREE
+  HALF          1+0x60  As FREE
+
+ONE and HALF are TRIG types with flags added: 0x20 for ONE, 0x60 for
+HALF. For example, ONE at rate group 1 is 0x24.
+
+  Rate group    0       1       2       3       4       5
+  ----------------------------------------------------------
+  Multiplier    1x      2x      0.5x    0.25x   0.01x   0.1x
+
+  Shape         0    1    2    3    4    5    6        7        8     9     10
+  -------------------------------------------------------------------------------
+                TRI  SAW  SQU  LIN  EXP  RND  REV-LIN  REV-EXP  SINE  STEP  NOTCH
+
+Trig Groups
+
+Unpacked: 32 bytes. Offsets count from the start of the unpacked
+Trig/mute groups block.
+
+  Pos           Value                                  Description
+  -------------------------------------------------------------------------------
+  0x00          16 x [0...15, 0xFF=OFF]                Trig groups, tracks 1...16
+  0x10          16 x [0...15, 0xFF=OFF]                Mute groups, tracks 1...16
+
+Kit Output Routing
+
+Offsets count from the first routing byte, at Kit Message offset 0x463.
+
+  Pos           Value                                  Description
+  -----------------------------------------------------------------------------------
+  t             [0...5], 6=MAIN, 127=GLOBAL, t=0...15  A...F, MAIN, or Global routing
+
+
+Pattern Message
+===============
+
+N = encoded body length. Encode the entire body as one 7-bit block.
+
+  Pos           Data                                   Description
+  ---------------------------------------------------------------------------------
+  0x00          0xF0 0x00 0x20 0x3C 0x02 <base>        Machinedrum header
+  0x06          0x67                                   Pattern message
+  0x07          0x40                                   Version
+  0x08          0x01                                   Revision
+  0x09          [0x00 ... 0x7F]                        Original position: A01...H16
+  0x0A          N data (7-bit encoding)                Pattern body
+  0x0A+N        [0 ... 127]                            Checksum (bit 7...13)
+  0x0B+N        [0 ... 127]                            Checksum (bit 0...6)
+  0x0C+N        [0 ... 127]                            Message length (bit 7...13)
+  0x0D+N        [0 ... 127]                            Message length (bit 0...6)
+  0x0E+N        0xF7                                   End of SysEx
+
+Pattern Body
+
+Offsets count from the first byte of the unpacked pattern body
+(the "S" in "SPSXPTN").
+
+  Pos           Value                                  Description
+  ------------------------------------------------------------------------------------
+  0x000         7 bytes: "SPSXPTN"                     Magic
+  0x007         0x40                                   Body schema
+  0x008         [32,64]                                Step capacity
+  0x009         16                                     Track count
+  0x00A         2 bytes, big-endian                    Used event words, E
+  0x00C         2 bytes: 0x02 0xA8                     Settings/track-header size: 680
+  0x00E         2 zero bytes                           Reserved
+  0x010         40 bytes                               Pattern settings
+  0x038         16 x 40 bytes                          Track headers
+  0x2B8         E x 2 bytes, big-endian                Event data
+
+  Quantity                              Value
+  -------------------------------------------------------------------------
+  Unpacked body size, B                 696 + 2*E
+  Encoded body size, N                  B + ceil(B/7)
+  Complete message size                 N + 15
+  Empty-event pattern message           811
+  MKI / MKII maximum E                  1160 / 3048
+  MKI / MKII maximum message size       3462 / 7778
+  Step capacity                         64 on MKI and MKII; 32 also accepted
+
+Pattern Settings
+
+Offsets below are relative to the start of Pattern Settings, at byte
+0x010 of the unpacked pattern body.
+
+  Pos           Value                                  Description
+  --------------------------------------------------------------------
+  0x00          8 bytes; bit n = step n                Accent pattern
+  0x08          8 bytes; bit n = step n                Swing pattern
+  0x10          8 bytes; bit n = step n                Slide pattern
+  0x18          2 bytes; BPM*24, 0=retain tempo        Pattern tempo
+  0x1A          1 byte                                 Accent amount
+  0x1B          1 signed byte                          Swing amount
+  0x1C          [0=track,1=all]                        Accent edit all
+  0x1D          [0=track,1=all]                        Slide edit all
+  0x1E          [0=track,1=all]                        Swing edit all
+  0x1F          [0=TRACK,1=ALL]                        Scale mode
+  0x20          [1...255], 0=INF                       Master length
+  0x21          Bit field below                        ALL scale/speed
+  0x22          Speed ID below                         Master speed
+  0x23          [1 ... 64]                             ALL length
+  0x24          [0...63], 0xFF=none                    Kit
+  0x25          [0...127], 0xFF=none                   Chain target
+  0x26          [1...255], 0=disabled                  Chain loops
+  0x27          [0/1=each cycle,2...255=cycle count]   CHNG
+
+  ALL scale/speed bits                  Meaning
+  -------------------------------------------------------------------------
+  0...1                                 Scale: 0=16, 1=32, 2=48, 3=64 steps
+  2...4                                 ALL speed ID
+  5...6                                 Zero
+  7                                     1=independent ALL/MASTER timing
+
+Bit 7 of settings byte 0x21 selects how ALL timing is read:
+
+  Bit 7  ALL speed                    ALL length
+  ----------------------------------------------------------------
+  1      Speed ID in bits 2...4       Settings byte 0x23
+  0      MASTER speed                 MASTER length, capped at 64;
+                                      if INF, (SCALE+1)*16
+
+Set bit 7 to 1 when encoding. When it is 0, bits 2...6 must be zero;
+byte 0x23 must be 0 or 1 and is not used for ALL length.
+
+  Speed ID      0       1       2       3       4       5       6       7
+  ------------------------------------------------------------------------
+  Rate          1x      2x      3/4x    3/2x    1/2x    1/4x    1/8x    4x
+
+Track Header
+
+Offsets below are relative to the start of each track header, at byte
+0x038 + 0x28*t of the unpacked pattern body (t=0...15).
+
+  Pos           Value                                  Description
+  ----------------------------------------------------------------------------------------
+  0x00          8 bytes; bit n = step n                Trig pattern
+  0x08          8 bytes; bit n = step n                Slide pattern
+  0x10          8 bytes; bit n = step n                Accent pattern
+  0x18          8 bytes; bit n = step n                Swing pattern
+  0x20          [1...step capacity], 0=inherit         Track length
+  0x21          [0...7], 0xFF=inherit                  Track speed
+  0x22          [0 ... 38]                             Lock record count, steps 0...31
+  0x23          [0 ... step capacity]                  Microtiming entry count
+  0x24          [0 ... step capacity]                  Condition/state entry count
+  0x25          [0 ... 38]                             Lock record count, steps 32...63
+  0x26          2 zero bytes                           Reserved
+
+Event Data
+
+Event data starts at byte 0x2B8 of the unpacked pattern body.
+The regions below repeat for tracks 0...15; bit numbers refer to each
+16-bit word.
+
+  Order         Region                                 Ordering within region
+  ----------------------------------------------------------------------------
+  1             Locks for steps 0...31                 Parameter ID ascending
+  2             Locks for steps 32...63                Parameter ID ascending
+  3             Microtiming entries                    Absolute step ascending
+  4             Condition/state entries                Absolute step ascending
+
+One lock record contains one parameter's locks within a 32-step page.
+It starts with a 16-bit header, followed by either step/value pairs or
+a table of 32 values:
+
+  Locked steps  Header bit 15  Data following the header
+  -----------------------------------------------------------------------
+  1...16        0              One 16-bit step/value pair per locked step
+  17...32       1              32 bytes in step order; 0xFF means no lock
+
+  Record type      Bits/bytes    Value                   Description
+  ---------------------------------------------------------------------------------------
+  Lock header      Bits 0...5    [0 ... 37]              Parameter ID
+                   Bits 6...11   [0 ... 31]              Number of locked steps minus one
+                   Bits 12...14  Zero                    Reserved
+                   Bit 15        [0,1]                   Storage format above
+  Step/value pair  Bits 0...5    [0 ... 31]              Step within the 32-step page
+                   Bits 6...12   [0 ... 127]             Lock value
+                   Bits 13...15  Zero                    Reserved
+  Value table      32 bytes      [0...127],0xFF=no lock  One value per page step, 0...31
+  Microtiming      Bits 0...5    [0 ... 63]              Pattern step
+                   Bits 6...13   Signed 8-bit value      Timing value; conversion below
+                   Bits 14...15  Zero                    Reserved
+  Condition        Bits 0...5    [0 ... 63]              Pattern step
+                   Bits 6...11   [0 ... 51]              Condition ID
+                   Bits 12, 14   Mode; see below         What the condition controls
+                   Bit 13        [0,1]                   Disable locks on this step
+                   Bit 15        Zero                    Reserved
+
+  Rule                            Requirement
+  --------------------------------------------------------------------------------------
+  Step/value pairs                Store in ascending step order
+  Value table                     Number of non-0xFF values must match header lock count
+  Page step n                     Pattern step n for first page; n+32 for second page
+  Lock records                    At most one per parameter per track/page
+  Microtiming/condition entries   At most one of each per pattern step per track
+  Zero microtiming                Omit entry
+  Condition 0, bits 12...14 clear Omit entry
+  32-step capacity                Clear mask bits 32...63; omit locks for second page
+  Used event words, E             Total event-data bytes divided by two
+
+Microtiming: -127 to 127; negative shifts earlier, positive shifts
+later. The value is a fraction of the track's maximum offset R, in
+1/384-note units: offset = (|value| x R + 64) / 128, rounded down, with
+the value's sign. R is 23, or one less than the track's step length when
+that is shorter: 11 at 2x, 5 at 4x, 15 at 3/2x.
+
+  Bit 14  Bit 12  Condition mode
+  ------------------------------------------------------------
+  0       0       TRIG; mode not chosen (opens as TRIG+LOCK)
+  0       1       TRIG+LOCK
+  1       0       TRIG
+  1       1       LOCK
+
+Conditions below are listed in ID order. For example, 1:4 plays on
+the first cycle of every four cycles.
+
+  Condition ID  Description
+  -----------------------------------------------------
+  0             Always
+  1...7         90%,75%,66%,50%,33%,25%,10%
+  8             One-shot
+  9...10        First / not first
+  11...12       Fill / not fill
+  13...14       Previous / not previous
+  15...16       Neighbour / not neighbour
+  17...18       1:2, 2:2
+  19...21       1:3, 2:3, 3:3
+  22...25       1:4, 2:4, 3:4, 4:4
+  26...30       1:5, 2:5, 3:5, 4:5, 5:5
+  31...36       1:6, 2:6, 3:6, 4:6, 5:6, 6:6
+  37...43       1:7, 2:7, 3:7, 4:7, 5:7, 6:7, 7:7
+  44...51       1:8, 2:8, 3:8, 4:8, 5:8, 6:8, 7:8, 8:8
+  52...63       Reserved
+
+Compatibility
+=============
+
+  Object        Accepted older versions   LEGACY export   Extended fields omitted
+  ---------------------------------------------------------------------------------
+  Pattern       0x02,0x03                 0x03            Timing, conditions,
+                                                          microtiming, extra locks
+  Kit           0x01...0x04,0x40          0x04            LFO-B, envelope, retrigs,
+                                                          kit output routing, tonal octave

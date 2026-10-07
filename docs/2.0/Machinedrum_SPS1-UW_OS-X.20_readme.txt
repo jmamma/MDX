@@ -1,0 +1,486 @@
+* Machinedrum OS X.20 Release information *
+-------------------------------------------
+
+This is an independent firmware release and is not affiliated with Elektron.
+
+X.20 introduces MDX 2.0, available as a public preview. It needs wider
+community testing before it is suitable for live performance. X.14
+remains the stable release until announced otherwise.
+
+PLEASE BACK UP ALL SNAPSHOTS AND INTERNAL MEMORY VIA SYSEX BEFORE UPGRADING.
+BETTER SAFE THAN SORRY.
+
+Before upgrading to X.20
+------------------------
+
+On models without +Drive, X.20 reduces song capacity from 32 to 16.
+Upgrading deletes songs 17 to 32, so back them up first.
++Drive models retain all 32 songs. Each song still holds 256 rows.
+
+X.20 stores patterns, kits, songs, global settings and +Drive snapshots
+in a new format. It can load snapshots from the original firmware and from
+MDX X.14 and before. Older firmware cannot load snapshots saved by X.20.
+
+In Snapshot Manager, the "SPS-X" label identifies snapshots saved in the
+X.20 format. Snapshots without this label use the original firmware/MDX
+format. Saving a legacy snapshot in X.20 converts it to the new format.
+
+To downgrade back to X.14 or older firmware, back up first. After installing
+the older OS, perform a Factory Reset from Machinedrum's boot menu, by
+holding [Func] during power-on and then selecting (3) Factory Reset.
+
+List of changes from Machinedrum SPS-1 OS X.14 to X.20
+-------------------------------------------------------
+
+Updates
+-------
+
+** The sequencer has been expanded. **
+
+Patterns support independent track lengths, speeds, microtiming, trigless parameter-locks,
+conditional trigs.
+
+Both MKI and MKII models now support up to 64 steps per track.
+
+** Pattern event memory **
+
+Each pattern has one event pool, shared by all 16 tracks, for P-locks,
+microtiming and trig conditions.
+
+  Model | X.20 events (up to)
+-----------------------------------
+  MKI   | 2,179 (previously 2,048)
+  MKII  | 5,732 (previously 4,096)
+
+** Independent track lengths and speeds **
+
+In the SCALE menu, press [YES] to switch between ALL and TRACK. ALL
+applies one length and speed to the whole pattern. TRACK gives each
+track its own length and speed. Track settings
+are retained when switching back to ALL.
+
+The available speeds are 1x, 2x, 3/2x, 3/4x, 1/2x, 1/4x and 1/8x.
+
+In TRACK mode, press [FUNCTION] + [LEFT]/[RIGHT] to open the MASTER page.
+MASTER length sets when all tracks restart together. Set it to INF to let
+each track loop at its own length without a shared restart. CHNG determines the
+number of cycles before a chained pattern or song advances. With an INF
+master length, one cycle is the duration of the longest track, taking its
+speed into account.
+
+** Microtiming **
+
+Trigs can be moved before or after their step in 1/384-note increments
+(96 per quarter note, 24 per 16th step). The popup displays signed note
+fractions, such as +1/384 or -1/192, and ON GRID for zero offset.
+
+Hold a trig in step editing mode and press [LEFT]/[RIGHT] or turn the
+track-select wheel to open the microtiming popup and adjust timing without
+changing tracks. Multiple held trigs can be adjusted together.
+Hold [FUNCTION] for larger adjustments.
+
+** Conditional trigs **
+
+Hold a trig in step editing mode and press [UP]/[DOWN] to select a trig
+condition. The LEV encoder also adjusts the condition.
+
+While the microtiming popup is open, press [PAGE] to cycle the condition mode:
+
+- TRIG: the condition controls the hit; P-locks remain active.
+- LOCK: the condition controls P-locks; the hit still plays.
+- TRIG+LOCK: the condition controls both the hit and its P-locks.
+
+The selected mode appears in the popup. New conditions default to TRIG+LOCK.
+
+The following conditions are available:
+
+- Probability: 10%, 25%, 33%, 50%, 66%, 75% and 90%.
+- 1SH: one-shot.
+- 1ST and !1S: first cycle, or all cycles except the first.
+- FIL and !FL: fill active, or fill inactive.
+- PRE and !PR: the previous condition on this track passed, or did not pass.
+- NEI and !NE: the neighbouring track's condition passed, or did not pass.
+- X:Y: play on cycle X of Y, with Y from 2 to 8.
+
+The default condition, shown as "-", always plays.
+
+** Fill Mode **
+
+All tracks are selected for fill by default. Fill mode starts off.
+
+From the main screen during playback, with no trig held:
+
+- Hold [UP] + [SCALE] for momentary fill.
+- Press [DOWN] + [SCALE] to queue fill for the next pattern cycle.
+- Press [UP] + [DOWN] + [SCALE] to latch fill on.
+- Press [UP] + [SCALE] again to unlatch.
+
+All SCALE LEDs flash together in time with the beat while fill is queued,
+and stay lit while fill is active. Normal page indication returns when
+fill ends or is cancelled.
+
+The MUTE menu now has a FILL view. Press [SCALE] while the menu is open
+to switch between MUTE and FILL. Trig keys select which tracks participate
+when fill mode is active.
+The FILL title shows OFF, ON or QUE (queued). This is the same
+live fill state controlled by the arrow shortcuts.
+
+Song rows can store their own fill selection. Press [SCALE] in the song
+mute editor to switch to SONG FILL. [YES] toggles that row's saved OFF/ON
+setting, shown in the title; [NO] closes the editor. The row setting is
+applied when the row starts or repeats. Live fill controls do not change
+the saved row setting, and momentary/queued fills still work during song
+playback. Existing songs default to OFF.
+
+Track FILL can also be controlled by MIDI. See MIDI Additions below.
+
+** Retrigs **
+
+RTRG, RTIM and RENV are available on the ENV page.
+
+- RTRG selects OFF, 1 to 126 repeats, or INF.
+- RTIM selects the repeat interval: 1/384, 1/192, 1/128, 1/96, 1/64,
+  1/48, 1/32, 1/24, 1/16, 1/12, 1/8, 1/6, 1/4, 1/3 or 1/2 note.
+- RENV determines whether each repeat restarts the track's envelope.
+
+These parameters can be P-locked and modulated by an LFO.
+
+** Patterns can store their own tempo. **
+
+Set TEMPO CHANGE to PATTERN in the Global SYNC settings to enable pattern
+tempo changes. The pattern tempo is edited from the SCALE menu. A pattern
+with no tempo setting retains the current tempo.
+
+The tempo range is 20 to 280 BPM.
+
+** A second LFO is now available for every track. **
+
+Each track has LFO-A and LFO-B, with independent destination, waveform,
+type, speed, depth and shape mix. This provides 32 LFOs in total.
+
+The LFO menu now has LFO-A, LFO-B and ENV pages. Press [SYNTHESIS/
+EFFECTS/ROUTING] while the menu is open to cycle through them.
+[FUNCTION] + [LEFT]/[RIGHT] also changes page.
+
+Both LFOs can target track parameters or the Delay, Reverb, EQ and Dynamics
+parameters directly. Envelope and retrig parameters are also available
+as destinations.
+
+TYPE provides FREE, TRIG, HOLD, ONE and HALF modes. ONE restarts
+the LFO on a trig like TRIG, runs one cycle and then stops on the
+cycle's last value. HALF stops after half a cycle. LIN, EXP and the other
+envelope waveforms keep running after the stop.
+
+All five types have rate multipliers of 0.01x, 0.1x, 0.25x, 0.5x, 1x
+and 2x.
+
+With LFO-A or LFO-B open, hold [TEMPO] and turn the TYPE encoder to change
+that track's multiplier. Hold [FUNCTION] while turning TYPE to change the
+multipliers on all tracks. Tap [TEMPO] to open the Tempo page.
+
+** A dedicated envelope is now available for every track. **
+
+The ENV page provides ATTK, HOLD, DEC and EVMIX. DEST selects AMP, FLTF
+or FLTW. For filter destinations, EVMIX becomes EVDEP: 64 applies no
+modulation, values below 64 apply negative modulation, and values above
+64 apply positive modulation.
+
+HOLD time follows the current tempo, with fine control of short holds.
+
+** New engine settings **
+
+Global CONTROL > ENGINE provides the following settings:
+
+- TUNING: A=440 Hz, adjustable by -50 to +50 cents. The legacy MDX
+  setting (A=433 Hz) is also available.
+- INTERPOLATE: enable smoothing of track VOL/PAN and master-effect level
+  changes, or retain LEGACY behaviour.
+- TIMING: PRECISE starts triggers at their exact time. LEGACY retains
+  the original block-aligned timing.
+- ANTI-CLICK: OFF, 64 or 128 samples. A retrigger can fade the previous
+  sound before the new hit begins.
+- PTC DISP: NOTE shows note names or semitone offsets and edits supported
+  tonal pitch controls in semitones. VAL uses numeric parameter values.
+
+** Tonal tuning now has octave-down and octave-up ranges. **
+
+In EDIT KIT, select TUNING for a machine that supports tonal tuning.
+Use [UP]/[DOWN] to choose:
+
+- DEFAULT: the machine's original pitch response.
+- TONAL: the existing chromatic tuning range.
+- TONAL-1: one octave below TONAL.
+- TONAL+1: one octave above TONAL.
+
+** Output routing can now be stored in the kit. **
+
+The EDIT KIT menu includes an output setting for each track. Select MA
+for the main stereo pair, A to F for an individual output, or -- to follow
+the active Global's routing.
+
+** INTERNAL samples can now be replaced. **
+
+Sample Manager has an INTERNAL view for the 21 samples used by the E12
+machines. Samples can be received and sent via SDS, renamed, copied,
+pasted and erased. This is available on non-UW models as well as UW models.
+
+On UW models, select INTERNAL > or USERWAVE > in the sample list to
+switch between the two sample areas. Copy/paste can transfer samples
+between them, subject to the destination's capacity.
+
+With +Drive, each Sample Bank holds its own INTERNAL samples as well as
+its UserWave samples, so loading a Sample Bank changes both. Without
++Drive, INTERNAL samples are stored in onboard flash.
+
+** User machines can now be installed via MIDI. **
+
+User machines are custom synthesis engines. Up to 16 can be installed
+and assigned to tracks from the EDIT KIT menu, like built-in MD machines.
+
+Only install MDS machines from developers you trust. Machine code runs on
+the DSP and may cause instability or unexpected audio.
+
+Machines are managed in Global FILE > MACHINE MGR, which provides RECV,
+SEND, RNAME, ERASE and copy/paste. To install a machine, select a slot,
+arm RECV and send the machine via a MIDI SYSEX dump.
+
+Press [FUNCTION] + [YES] to audition the selected machine.
+
+Each machine defines its own category, parameter names and defaults,
+and a 32x24 pixel sprite for Machine Manager.
+
+User machines are stored in the selected +Drive Machine Bank, or onboard
+flash without +Drive. Without +Drive, firmware upgrades erase installed
+user machines.
+
+** Machine Banks are now available on +Drive. **
+
+Global FILE > +DRIVE > MACHBANKS provides 128 banks of 16 USR slots.
+Banks can be selected, renamed, copied, pasted, erased and locked.
+
+Hold [FUNCTION] + [PATTERN/SONG] + [KIT] for 700 ms to open the Machine
+Bank quick menu. Select a bank and press [YES] to load it.
+
+Each snapshot is linked to the Machine Bank selected when it was saved.
+Loading the snapshot switches to that bank if a different one is
+selected.
+
+The USR Machine SYSEX transfer is described in MDX_MachineDumpProtocol.txt
+and the machine file format in MDX_MachineDumpStandard.txt.
+
+** Songs can be queued during playback. **
+
+Selecting a song during playback queues it ("SONG QUEUED"). In Song mode
+it starts from its first row at the next pattern boundary, without
+waiting for row repeats or CHNG cycles. A later selection replaces the
+queued song.
+
+MIDI Additions:
+---------------
+
+MIDI and Sysex reference: MDX_Sysex_2_0.txt.
+
+** LEGACY and EXPANDED channel modes **
+
+Global CONTROL > BASE CHANNEL now has a MODE setting.
+
+LEGACY uses four consecutive MIDI channels, as before. EXPANDED uses
+eight: the first four retain the existing mapping, and the additional
+four provide direct CC access to the envelope, LFO-B and retrig controls.
+
+The base channel can be 1 to 13 in LEGACY mode, or 1 to 9 in EXPANDED
+mode. "--" disables the base-channel mapping. The selected mode is
+stored in the Global slot.
+
+With B as the selected base channel:
+
+  Channel | Track group | Purpose
+--------------------------------------------------------
+        B |  1 to  4   | Original track controls
+      B+1 |  5 to  8   | Original track controls
+      B+2 |  9 to 12   | Original track controls
+      B+3 | 13 to 16   | Original track controls
+      B+4 |  1 to  4   | Additional track controls
+      B+5 |  5 to  8   | Additional track controls
+      B+6 |  9 to 12   | Additional track controls
+      B+7 | 13 to 16   | Additional track controls
+
+On each additional channel, b = 0, 1, 2 or 3 selects the first, second,
+third or fourth track in that channel's group:
+
+    CC     | Parameter              | Value
+--------------------------------------------------------
+     0 + b | Envelope ATTK          | 0 to 127
+     4 + b | Envelope HOLD          | 0 to 127
+     8 + b | Envelope DEC           | 0 to 127
+    12 + b | Envelope EVMIX/EVDEP   | 0 to 127
+    16 + b | LFO-B SPEED            | 0 to 127
+    20 + b | LFO-B DEPTH            | 0 to 127
+    24 + b | LFO-B SHMIX            | 0 to 127
+    28 + b | RTRG                   | 0=OFF, 1..126, 127=INF
+    32 + b | RTIM                   | 0 to 14; see below
+    36 + b | RENV                   | 0=OFF, 1=ON
+    40 + b | Envelope DEST          | 0=AMP, 1=FLTF, 2=FLTW
+    44..55 | Reserved               | --
+
+RTIM values:
+
+  Value | Interval     Value | Interval     Value | Interval
+-------------------------------------------------------------
+      0 | 1/384            5 | 1/48             10 | 1/8
+      1 | 1/192            6 | 1/32             11 | 1/6
+      2 | 1/128            7 | 1/24             12 | 1/4
+      3 | 1/96             8 | 1/16             13 | 1/3
+      4 | 1/64             9 | 1/12             14 | 1/2
+
+** Per-track fill control **
+
+CC 68+b controls per-track fill on the original four base channels
+(B to B+3), using the same track groups and b values shown above.
+Value 0 excludes the track; values 1 to 127 select it for fill. Fill mode
+must be active for selected tracks' FIL conditions to play. This works
+in both LEGACY and EXPANDED channel modes.
+
+Sysex Additions:
+----------------
+
+The SYSEX SEND menu defaults to the current extended format. LEGACY
+remains available when sending data to an older OS.
+
+** SYSEX song selection during playback **
+
+Load Song ($6C) and Set Status / Song ($71/$08) use the same queued
+selection as the LOAD SONG menu. The active song changes at a pattern
+boundary. Receiving a Song dump ($69) stores the data without selecting it.
+
+** Machinedrum Pattern version increased to 64.1 **
+
+Pattern dumps from X.20 use a new format for the expanded sequencer.
+See MDX_PatternKit_2_0.txt for the specification.
+
+Versions 2 and 3 can still be received. Older operating systems require
+LEGACY export, which omits the new sequencer features.
+
+** Machinedrum Kit version increased to 65.1 **
+
+Kit dumps from X.20 include the additional kit settings and per-track
+tonal octave selection.
+See MDX_PatternKit_2_0.txt for the specification.
+
+Kit versions 1 to 4 from the original firmware, and MDX version 64.1,
+can still be received.
+Older firmware versions require LEGACY export, which omits the new
+kit settings.
+
+** Song and Global dump additions **
+
+Song dumps retain row fills, and Global dumps retain pattern-tempo and
+MIDI-channel mode settings.
+
+Extended fields are not included in LEGACY dumps.
+
+** SYSEX assign machine ($5B) **
+
+Numbers prefixed with $ or 0x are hexadecimal. Other numbers are decimal.
+
+(SYSEX init) = $F0 $00 $20 $3C $02 $00.
+
+  MIDI Byte    | Purpose
+  -------------+--------------------------------------------------------
+  (SYSEX init) |
+  $5b          | Assign machine ID
+  %0000aaaa    | Select track a (0 to 15)
+  %0bbbbbbb    | Machine number b (0 to 127)
+  %000ud0tc    | Model/tuning flags (optional; default 0)
+  %000000ii    | 0 = init synthesis, 1 = synthesis + effects,
+               | 2 = synthesis + effects + routing (optional; default 2)
+  $f7          | SYSEX end
+
+Model/tuning flags:
+
+- c: model high bit; add 128 to the machine number when set.
+- t: tonal tuning enabled.
+- d: one octave down; requires t=1.
+- u: one octave up; requires t=1.
+
+  Tuning   | Flags before adding model high bit c
+  ---------+------------------------------------
+  DEFAULT  | $00
+  TONAL    | $02
+  TONAL-1  | $0A
+  TONAL+1  | $12
+
+Both octave bits set select ordinary TONAL. If t=0, the octave bits
+are ignored. Existing model-high-bit values $00/$01 retain their meaning.
+
+Extended immediate/cached assignment ($70/$5B), machine-update replies
+($63), and realtime track-state replies use the same tuning flag bits.
+Extended assignment retains bit 2 ($04) for its optional output-routing
+byte. Message lengths are unchanged. MIDI controllers must preserve the
+new octave bits to retain the selection when reloading a machine.
+
+Additional or updated machine entries for Appendix C:
+Use the machine number below for b. All numbers are decimal.
+
+Built-in machines (c=0):
+
+  Machine number | Machine
+  ---------------+-----------
+              01 | GND-SN-PRO
+              04 | GND-SW
+              05 | GND-PU
+              07 | NFX-EV
+              08 | NFX-CO
+              09 | NFX-UC
+              29 | TRX-S2
+              86 | INP-CA
+              87 | INP-CB
+
+User machine slots (c=1):
+
+  Machine number | Machine
+  ---------------+-----------
+              66 | USR-01
+              67 | USR-02
+              68 | USR-03
+              69 | USR-04
+              70 | USR-05
+              71 | USR-06
+              72 | USR-07
+              73 | USR-08
+              74 | USR-09
+              75 | USR-10
+              76 | USR-11
+              77 | USR-12
+              78 | USR-13
+              79 | USR-14
+              80 | USR-15
+              81 | USR-16
+
+All other Appendix C machine numbers are unchanged.
+
+** SYSEX set channel mode ($70/$4F) **
+
+  MIDI Byte | Purpose
+----------------------------------------
+        $f0 | SYSEX init
+        $00 | Elektron manufacturer ID
+        $20 |
+        $3C |
+        $02 | MD device ID
+        $00 |
+        $70 | Extended status command
+        $4F | Set channel mode
+  %0000000b | b = 0: LEGACY, b = 1: EXPANDED
+        $f7 |
+
+** SYSEX dump versions **
+
+  Type    | Command | X.20 version | Revision
+  --------+---------+--------------+---------
+  Kit     | $52     | $41          | $01
+  Pattern | $67     | $40          | $01
+  Song    | $69     | $40          | $01
+  Global  | $50     | $40          | $01
+
+Pattern and Kit field layouts are documented in MDX_PatternKit_2_0.txt.

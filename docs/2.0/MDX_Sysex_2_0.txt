@@ -1,0 +1,207 @@
+MDX 2.0 MIDI and Sysex reference (X.20)
+=======================================
+
+** LEGACY and EXPANDED channel modes **
+
+Global CONTROL > BASE CHANNEL now has a MODE setting.
+
+LEGACY uses four consecutive MIDI channels, as before. EXPANDED uses
+eight: the first four retain the existing mapping, and the additional
+four provide direct CC access to the envelope, LFO-B and retrig controls.
+
+The base channel can be 1 to 13 in LEGACY mode, or 1 to 9 in EXPANDED
+mode. "--" disables the base-channel mapping. The selected mode is
+stored in the Global slot.
+
+With B as the selected base channel:
+
+  Channel | Track group | Purpose
+--------------------------------------------------------
+        B |  1 to  4   | Original track controls
+      B+1 |  5 to  8   | Original track controls
+      B+2 |  9 to 12   | Original track controls
+      B+3 | 13 to 16   | Original track controls
+      B+4 |  1 to  4   | Additional track controls
+      B+5 |  5 to  8   | Additional track controls
+      B+6 |  9 to 12   | Additional track controls
+      B+7 | 13 to 16   | Additional track controls
+
+On each additional channel, b = 0, 1, 2 or 3 selects the first, second,
+third or fourth track in that channel's group:
+
+    CC     | Parameter              | Value
+--------------------------------------------------------
+     0 + b | Envelope ATTK          | 0 to 127
+     4 + b | Envelope HOLD          | 0 to 127
+     8 + b | Envelope DEC           | 0 to 127
+    12 + b | Envelope EVMIX/EVDEP   | 0 to 127
+    16 + b | LFO-B SPEED            | 0 to 127
+    20 + b | LFO-B DEPTH            | 0 to 127
+    24 + b | LFO-B SHMIX            | 0 to 127
+    28 + b | RTRG                   | 0=OFF, 1..126, 127=INF
+    32 + b | RTIM                   | 0 to 14; see below
+    36 + b | RENV                   | 0=OFF, 1=ON
+    40 + b | Envelope DEST          | 0=AMP, 1=FLTF, 2=FLTW
+    44..55 | Reserved               | --
+
+RTIM values:
+
+  Value | Interval     Value | Interval     Value | Interval
+-------------------------------------------------------------
+      0 | 1/384            5 | 1/48             10 | 1/8
+      1 | 1/192            6 | 1/32             11 | 1/6
+      2 | 1/128            7 | 1/24             12 | 1/4
+      3 | 1/96             8 | 1/16             13 | 1/3
+      4 | 1/64             9 | 1/12             14 | 1/2
+
+** Per-track fill control **
+
+CC 68+b controls per-track fill on the original four base channels
+(B to B+3), using the same track groups and b values shown above.
+Value 0 excludes the track; values 1 to 127 select it for fill. Fill mode
+must be active for selected tracks' FIL conditions to play. This works
+in both LEGACY and EXPANDED channel modes.
+
+Sysex Additions:
+----------------
+
+The SYSEX SEND menu defaults to the current extended format. LEGACY
+remains available when sending data to an older OS.
+
+** SYSEX song selection during playback **
+
+Load Song ($6C) and Set Status / Song ($71/$08) use the same queued
+selection as the LOAD SONG menu. The active song changes at a pattern
+boundary. Receiving a Song dump ($69) stores the data without selecting it.
+
+** Machinedrum Pattern version increased to 64.1 **
+
+Pattern dumps from X.20 use a new format for the expanded sequencer.
+See MDX_PatternKit_2_0.txt for the specification.
+
+Versions 2 and 3 can still be received. Older operating systems require
+LEGACY export, which omits the new sequencer features.
+
+** Machinedrum Kit version increased to 65.1 **
+
+Kit dumps from X.20 include the additional kit settings and per-track
+tonal octave selection.
+See MDX_PatternKit_2_0.txt for the specification.
+
+Kit versions 1 to 4 from the original firmware, and MDX version 64.1,
+can still be received.
+Older firmware versions require LEGACY export, which omits the new
+kit settings.
+
+** Song and Global dump additions **
+
+Song dumps retain row fills, and Global dumps retain pattern-tempo and
+MIDI-channel mode settings.
+
+Extended fields are not included in LEGACY dumps.
+
+** SYSEX assign machine ($5B) **
+
+Numbers prefixed with $ or 0x are hexadecimal. Other numbers are decimal.
+
+(SYSEX init) = $F0 $00 $20 $3C $02 $00.
+
+  MIDI Byte    | Purpose
+  -------------+--------------------------------------------------------
+  (SYSEX init) |
+  $5b          | Assign machine ID
+  %0000aaaa    | Select track a (0 to 15)
+  %0bbbbbbb    | Machine number b (0 to 127)
+  %000ud0tc    | Model/tuning flags (optional; default 0)
+  %000000ii    | 0 = init synthesis, 1 = synthesis + effects,
+               | 2 = synthesis + effects + routing (optional; default 2)
+  $f7          | SYSEX end
+
+Model/tuning flags:
+
+- c: model high bit; add 128 to the machine number when set.
+- t: tonal tuning enabled.
+- d: one octave down; requires t=1.
+- u: one octave up; requires t=1.
+
+  Tuning   | Flags before adding model high bit c
+  ---------+------------------------------------
+  DEFAULT  | $00
+  TONAL    | $02
+  TONAL-1  | $0A
+  TONAL+1  | $12
+
+Both octave bits set select ordinary TONAL. If t=0, the octave bits
+are ignored. Existing model-high-bit values $00/$01 retain their meaning.
+
+Extended immediate/cached assignment ($70/$5B), machine-update replies
+($63), and realtime track-state replies use the same tuning flag bits.
+Extended assignment retains bit 2 ($04) for its optional output-routing
+byte. Message lengths are unchanged. MIDI controllers must preserve the
+new octave bits to retain the selection when reloading a machine.
+
+Additional or updated machine entries for Appendix C:
+Use the machine number below for b. All numbers are decimal.
+
+Built-in machines (c=0):
+
+  Machine number | Machine
+  ---------------+-----------
+              01 | GND-SN-PRO
+              04 | GND-SW
+              05 | GND-PU
+              07 | NFX-EV
+              08 | NFX-CO
+              09 | NFX-UC
+              29 | TRX-S2
+              86 | INP-CA
+              87 | INP-CB
+
+User machine slots (c=1):
+
+  Machine number | Machine
+  ---------------+-----------
+              66 | USR-01
+              67 | USR-02
+              68 | USR-03
+              69 | USR-04
+              70 | USR-05
+              71 | USR-06
+              72 | USR-07
+              73 | USR-08
+              74 | USR-09
+              75 | USR-10
+              76 | USR-11
+              77 | USR-12
+              78 | USR-13
+              79 | USR-14
+              80 | USR-15
+              81 | USR-16
+
+All other Appendix C machine numbers are unchanged.
+
+** SYSEX set channel mode ($70/$4F) **
+
+  MIDI Byte | Purpose
+----------------------------------------
+        $f0 | SYSEX init
+        $00 | Elektron manufacturer ID
+        $20 |
+        $3C |
+        $02 | MD device ID
+        $00 |
+        $70 | Extended status command
+        $4F | Set channel mode
+  %0000000b | b = 0: LEGACY, b = 1: EXPANDED
+        $f7 |
+
+** SYSEX dump versions **
+
+  Type    | Command | X.20 version | Revision
+  --------+---------+--------------+---------
+  Kit     | $52     | $41          | $01
+  Pattern | $67     | $40          | $01
+  Song    | $69     | $40          | $01
+  Global  | $50     | $40          | $01
+
+Pattern and Kit field layouts are documented in MDX_PatternKit_2_0.txt.
