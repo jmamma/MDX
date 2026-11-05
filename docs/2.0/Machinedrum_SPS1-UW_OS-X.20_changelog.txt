@@ -1,0 +1,235 @@
+* Machinedrum OS X.20 C changelog *
+-----------------------------------
+
+This list covers the changes and bug fixes made after X.20 B
+(2026-10-09). For the full list of X.20 features, see
+Machinedrum_SPS1-UW_OS-X.20_readme.txt.
+
+New
+---
+
+- With +Drive, Machine Banks now have 48 USR slots instead of 16.
+
+- With +Drive, MACHINE MGR > INTERNAL can free the TRX, EFM or P-I machine
+  categories for the selected Machine Bank, so that more USR Machines can be
+  loaded. Choose FREE or LOAD in the MODE column and press [YES] to apply it
+  to the selected category. [FUNCTION] + [CLEAR] also frees the selected
+  category.
+
+- With +Drive, a USR Machine copied in MACHINE MGR can now be pasted into
+  another Machine Bank.
+
+- The MD now calculates the DSP load for each machine. The total load is shared
+  across the Kit rather than limited per track. Assigning a USR Machine
+  that would overload the DSP shows "DSP LIMIT". Hold [SCALE] in EDIT KIT
+  to see the Kit's total DSP load as a percentage.
+
+- The MDS specification is now version 1.1. It gives each USR Machine
+  separate DSP load figures for MKI and MKII. Existing USR Machines still
+  load, but their DSP load is only an estimate and can read too high or too
+  low. A Kit may show "DSP LIMIT" too early, or pass the check and still
+  overload the DSP. Update them with the certifier in the mds-tools
+  repository.
+
+- The bundled USR Machines have improved sound and performance.
+  Send them to the MD again to apply the updates.
+
+- Six new USR Machines: TXZ-SC, TXZ-CE, TXZ-SS, TXZ-BB, TXZ-EO and TXZ-FL.
+
+- A new TX6 drum set of six USR Machines: TX6-BD, TX6-SD, TX6-XT, TX6-CH,
+  TX6-OH and TX6-CY.
+
+- REC QUANT in Global SYNC > SEQUENCER, below TEMPO (formerly TEMPO
+  CHANGE). Set it to OFF to keep the timing of trigs recorded live, as
+  microtiming. ON, the default, places them on the nearest step, as
+  before.
+
+- LFO PAGE setting in Global CONTROL > ENGINE sets the LFO menu's key mapping.
+  NEW, the default, works as before: [SYNTHESIS/EFFECTS/ROUTING] key
+  cycles the LFO-A, LFO-B and ENV pages, and its LEDs show the open page.
+
+  With LFO PAGE set to LEGACY, the [SYNTHESIS/EFFECTS/ROUTING] key closes the LFO
+  menu and [LEFT]/[RIGHT] changes page. Its LEDs still show the open page.
+
+
+Sequencer timing and performance
+--------------------------------
+
+- TIMING (Global CONTROL > ENGINE): PRECISE, the default, keeps trigs,
+  microtiming and retrigs aligned with their programmed timing.
+  LEGACY starts each trig as soon as the sound engine is ready, so its
+  timing varies more.
+
+- Improved sequencer timing, with less variation between trigs in PRECISE.
+
+- With external MIDI clock, the sequencer now follows the clock more
+  closely. In PRECISE, trigs after the first step reach the audio output
+  sooner after each clock, and vary much less, than in X.14 or X.20 B.
+
+- Reduced the first-step delay when starting from external MIDI clock,
+  including when the clock master stops sending clock while paused.
+
+- Improved response to live MIDI notes.
+
+- Loading a row in MCL while playing no longer delays the first trigs
+  of the new row.
+
+- The screen responds faster to page changes while playing.
+
+- RTIM: 1/128 is now the fastest sequencer retrig interval.
+
++Drive
+------
+
+- Saving and loading +Drive snapshots is faster.
+
+- Loading a Machine Bank from +Drive, at power-on or when changing banks,
+  is several times faster.
+
+Fixes
+-----
+
+** Sequencer and MIDI sync **
+
+- Starting from external MIDI clock could leave the pattern one clock
+  late until Stop. Early clock pulses are now retained during Start.
+
+- Devices following Machinedrum's MIDI clock could start slightly out of
+  step with it. Playback now begins on a clock, with START or CONTINUE
+  sent just before it.
+
+- On rare occasions, playback could stop by itself.
+
+- A pattern change from a Program Change, a MIDI note or the panel had
+  to arrive about two steps before the end of the playing pattern, or
+  it waited a whole extra pattern. Arriving a little over one step
+  before the end is now enough.
+
+- Song mode ignored a row's BPM unless TEMPO was set to PATTERN,
+  and rows with no BPM (--) ignored the pattern's tempo. A row's BPM now
+  always applies, and a row with no BPM uses the pattern's tempo when
+  Global SYNC > SEQUENCER > TEMPO is set to PATTERN.
+
+- Extended mode: pasting a pattern kept the old Kit number, so reloading
+  the Kit brought back the old sounds and SAVE KIT offered the old slot.
+  A pasted pattern now brings its Kit number with it, and undo restores
+  the previous one.
+
+- Extended mode: switching to a pattern with no trigs loaded the Kit
+  stored in it, usually Kit 01, instead of keeping the current Kit.
+
+- With a trig held, the first [LEFT]/[RIGHT] press or track-select wheel
+  turn only opens the microtiming popup. Later presses and turns change
+  the value.
+
+** Sound and machines **
+
+- A loud pop could be heard at power-on, around the end of the splash
+  screen. Delay, Reverb, EQ and Dynamics settings now glide to new values,
+  as in X.14, instead of jumping.
+
+- AMD and AMF could stop working correctly on a track once its DIST had
+  been above 0, until power-off.
+
+- After power-on, SRR could have no effect for several seconds, or until
+  it was turned up high once.
+
+- With TUNING in Global CONTROL > ENGINE at +5 cents or more, the highest
+  notes on ROM and RAM-P tracks could freeze the MD.
+
+- RAM-R machines recorded nothing, and pasting from ROM to RAM showed
+  ERROR, after power-on.
+
+- Looped UserWave samples looped at the wrong point.
+
+- Changing VOL, or another routing setting, on one track could silence
+  another track playing an NFX or user machine. The track stayed silent
+  until its own setting was changed.
+
+- Muting an NFX or INP track did not silence it or its effect sends.
+
+- A parameter modulated by an LFO could stay at a modulated value, such
+  as VOL at 0, after the LFO moved to another destination or its depth
+  went to 0.
+
+- MID tracks could send wrong CC values while other tracks used
+  parameter slides.
+
+- Auditioning a sample or machine in Sample Manager, MACHINE MGR or EDIT
+  KIT could play it with the track's own pitch and settings instead of its
+  defaults.
+
+- Pressing STOP twice did not silence a user machine that was still
+  sounding.
+
+- A USR Machine that fails its check when received is now refused by
+  itself. The others in the send are still saved.
+
+** CTR-AL and CTR-8P **
+
+- CTR-AL: changes made through a CTR-AL track are now kept in the Kit, so
+  they are shown when editing and are included when the Kit is saved,
+  sent or copied.
+
+- CTR-AL and CTR-8P: previewing a held step no longer changes the
+  parameters of the tracks they control.
+
+- CTR-AL: knob moves recorded live are recorded on the CTR-AL track
+  only, not on every track it controls.
+
+- CTR-AL: an LFO aimed at its LFOS, LFOD or LFOM parameter now takes
+  effect, and editing another LFO no longer brings back an old CTR-AL
+  value over a parameter changed by hand.
+
+** Kits, banks and +Drive **
+
+- EDIT KIT: choosing another machine for a track reset its tuning to
+  DEFAULT. As in X.14, the track now keeps its tuning when the new
+  machine supports tonal tuning.
+
+- Kits converted from X.14, at first boot or from an X.14 snapshot, lost
+  their TONAL settings.
+
+- SAVE KIT reopened the Kit list after [YES] was pressed on the name.
+  SAVE SONG could skip a save.
+
+- The Snapshot, Sample Bank and Machine Bank managers opened at the first
+  slot, or wherever the cursor was last left, instead of at the active
+  slot.
+
+- A +Drive whose Machine Bank area had never been used could show BANK
+  ERROR with no slots.
+
+- Selecting a damaged or empty Machine Bank unloaded the bank in use.
+
+** Panel and display **
+
+- A bank LED could mark a pattern as used when it had no trigs or
+  parameter locks, for example after its tracks were cleared.
+
+- BANK GROUP was not kept at power-off, so the LEDs showed A-D after
+  starting on an E-H pattern.
+
+- In step editing mode, the playing step's LED could stay over the bank
+  and mute views, making an empty pattern look used or a used one look
+  empty.
+
+- In step editing mode, a step could stay held after its trig was
+  released, for example when [SCALE] changed page while it was held. Its
+  parameter locks then showed on other pages, and knob moves changed its
+  locks instead of the sound. [SCALE] no longer changes page while a trig
+  is held.
+
+- The 3/4x and 3/2x track speeds were labelled the wrong way round.
+
+- Pressing an encoder did not show its value on the main, LFO, master
+  effect and trigger input pages, as it does in X.14.
+
+- [FUNCTION] + knob did not move the other tracks when the selected
+  track's value was already at its minimum or maximum, for example on an
+  empty GND track.
+
+- A key such as [FUNCTION] could stay held after it was released, so
+  trig presses acted as [FUNCTION] + trig.
+
+- A worn encoder could lock out all keys and knobs until power-off.

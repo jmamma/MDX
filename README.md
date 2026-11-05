@@ -14,7 +14,8 @@ X.20 is a public preview. **X.14 remains the stable release.**
 
 | Firmware | Status | Release date | Download |
 | --- | --- | --- | --- |
-| X.20 B | **Preview** | 2026-10-09 | [ZIP](firmware/mdx/X.20/Machinedrum_SPS1-UW_OS_X.20_B.zip) |
+| X.20 C | **Preview** | 2026-11-05 | [ZIP](firmware/mdx/X.20/Machinedrum_SPS1-UW_OS_X.20_C.zip) |
+| X.20 B | Archived | 2026-10-09 | [ZIP](firmware/mdx/X.20/Machinedrum_SPS1-UW_OS_X.20_B.zip) |
 
 ### Legacy
 

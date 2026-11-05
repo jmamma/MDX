@@ -79,6 +79,11 @@ track-select wheel to open the microtiming popup and adjust timing without
 changing tracks. Multiple held trigs can be adjusted together.
 Hold [FUNCTION] for larger adjustments.
 
+Live recording places each trig on the nearest step. Set REC QUANT to OFF
+in Global SYNC > SEQUENCER to keep the played timing as microtiming. ON
+is the default. At 1/2x, 1/4x and 1/8x track speeds, offsets beyond
+23/384 are limited to 23/384.
+
 ** Conditional trigs **
 
 Hold a trig in step editing mode and press [UP]/[DOWN] to select a trig
@@ -139,17 +144,20 @@ Track FILL can also be controlled by MIDI. See MIDI Additions below.
 RTRG, RTIM and RENV are available on the ENV page.
 
 - RTRG selects OFF, 1 to 126 repeats, or INF.
-- RTIM selects the repeat interval: 1/384, 1/192, 1/128, 1/96, 1/64,
-  1/48, 1/32, 1/24, 1/16, 1/12, 1/8, 1/6, 1/4, 1/3 or 1/2 note.
+- RTIM selects the repeat interval: 1/128, 1/96, 1/64, 1/48, 1/32, 1/24,
+  1/16, 1/12, 1/8, 1/6, 1/4, 1/3 or 1/2 note.
 - RENV determines whether each repeat restarts the track's envelope.
 
 These parameters can be P-locked and modulated by an LFO.
 
 ** Patterns can store their own tempo. **
 
-Set TEMPO CHANGE to PATTERN in the Global SYNC settings to enable pattern
-tempo changes. The pattern tempo is edited from the SCALE menu. A pattern
+Set TEMPO to PATTERN in Global SYNC > SEQUENCER to enable pattern tempo
+changes. The pattern tempo is edited from the SCALE menu. A pattern
 with no tempo setting retains the current tempo.
+
+In song mode a row BPM always applies. A row with no BPM (--) uses the
+pattern tempo when TEMPO is set to PATTERN.
 
 The tempo range is 20 to 280 BPM.
 
@@ -160,7 +168,8 @@ type, speed, depth and shape mix. This provides 32 LFOs in total.
 
 The LFO menu now has LFO-A, LFO-B and ENV pages. Press [SYNTHESIS/
 EFFECTS/ROUTING] while the menu is open to cycle through them.
-[FUNCTION] + [LEFT]/[RIGHT] also changes page.
+[FUNCTION] + [LEFT]/[RIGHT] also changes page, stopping at the first and
+last pages. The LFO PAGE engine setting offers a LEGACY alternative.
 
 Both LFOs can target track parameters or the Delay, Reverb, EQ and Dynamics
 parameters directly. Envelope and retrig parameters are also available
@@ -195,12 +204,19 @@ Global CONTROL > ENGINE provides the following settings:
   setting (A=433 Hz) is also available.
 - INTERPOLATE: enable smoothing of track VOL/PAN and master-effect level
   changes, or retain LEGACY behaviour.
-- TIMING: PRECISE starts triggers at their exact time. LEGACY retains
-  the original block-aligned timing.
+- TIMING: PRECISE (the default) follows programmed trig timing, including
+  microtiming and retrigs, with internal or external MIDI clock. On MKI,
+  trigs can differ from the requested time by up to 0.7 ms. LEGACY starts
+  each trig as soon as the sound engine is ready, so timing varies.
 - ANTI-CLICK: OFF, 64 or 128 samples. A retrigger can fade the previous
   sound before the new hit begins.
 - PTC DISP: NOTE shows note names or semitone offsets and edits supported
   tonal pitch controls in semitones. VAL uses numeric parameter values.
+- LFO PAGE: sets how the LFO menu responds to keys. [FUNCTION] +
+  [SYNTHESIS/EFFECTS/ROUTING] opens and closes the menu with both settings.
+  With NEW (the default), [SYNTHESIS/EFFECTS/ROUTING] cycles the LFO-A,
+  LFO-B and ENV pages. With LEGACY, it closes the menu and [LEFT]/[RIGHT]
+  changes page. Its LEDs show the open page with both settings.
 
 ** Tonal tuning now has octave-down and octave-up ranges. **
 
@@ -211,6 +227,9 @@ Use [UP]/[DOWN] to choose:
 - TONAL: the existing chromatic tuning range.
 - TONAL-1: one octave below TONAL.
 - TONAL+1: one octave above TONAL.
+
+Choosing another machine for the track keeps its tuning when the new
+machine supports tonal tuning, as in X.14. Otherwise it returns to DEFAULT.
 
 ** Output routing can now be stored in the kit. **
 
@@ -234,8 +253,9 @@ its UserWave samples, so loading a Sample Bank changes both. Without
 
 ** User machines can now be installed via MIDI. **
 
-User machines are custom synthesis engines. Up to 16 can be installed
-and assigned to tracks from the EDIT KIT menu, like built-in MD machines.
+User machines are custom synthesis engines. Up to 16 can be installed,
+or 48 with +Drive, and assigned to tracks from the EDIT KIT menu, like
+built-in MD machines.
 
 Only install MDS machines from developers you trust. Machine code runs on
 the DSP and may cause instability or unexpected audio.
@@ -243,6 +263,18 @@ the DSP and may cause instability or unexpected audio.
 Machines are managed in Global FILE > MACHINE MGR, which provides RECV,
 SEND, RNAME, ERASE and copy/paste. To install a machine, select a slot,
 arm RECV and send the machine via a MIDI SYSEX dump.
+
+MACHINE MGR shows how full the user machine memory is, as a percentage.
+It shows whichever is fuller: the DSP memory or the bank's storage.
+
+These messages can appear while machines are being received:
+
+- DSP MEMORY FULL (DSP FULL in MACHINE MGR): no free part of the DSP
+  memory is large enough for the machine.
+- MEMORY FULL (MEM FULL in MACHINE MGR): the bank's storage is full.
+- BUFFER FULL: the machines already received are still being processed.
+  Stop sending and let them finish, then send the rest in smaller groups
+  or at a slower MIDI rate.
 
 Press [FUNCTION] + [YES] to audition the selected machine.
 
@@ -253,10 +285,23 @@ User machines are stored in the selected +Drive Machine Bank, or onboard
 flash without +Drive. Without +Drive, firmware upgrades erase installed
 user machines.
 
+** Kits with USR machines have a shared DSP limit. **
+
+All the machines in a Kit share the total DSP time available. A more
+DSP-demanding USR machine can run beside less demanding ones as long as the
+Kit's total stays within the DSP time limit. Hold [SCALE] in EDIT KIT to
+see how much of the limit the Kit uses, as a percentage. Holding [SCALE] also
+dims and disables loading machines that would exceed the DSP limit.
+
+If a loaded Kit or a received assignment exceeds the limit, the affected
+track stays silent and its machine name is dimmed until there is room.
+
 ** Machine Banks are now available on +Drive. **
 
-Global FILE > +DRIVE > MACHBANKS provides 128 banks of 16 USR slots.
+Global FILE > +DRIVE > MACHBANKS provides 128 banks of 48 USR slots.
 Banks can be selected, renamed, copied, pasted, erased and locked.
+A machine copied in MACHINE MGR stays on the clipboard when another bank
+is selected, so it can be pasted there.
 
 Hold [FUNCTION] + [PATTERN/SONG] + [KIT] for 700 ms to open the Machine
 Bank quick menu. Select a bank and press [YES] to load it.
@@ -264,6 +309,40 @@ Bank quick menu. Select a bank and press [YES] to load it.
 Each snapshot is linked to the Machine Bank selected when it was saved.
 Loading the snapshot switches to that bank if a different one is
 selected.
+
+** Built-in machines can make room for user machines (+Drive). **
+
+With +Drive, each Machine Bank can free any of the three built-in machine
+categories: TRX, EFM and P-I.
+
+Freeing a category gives user machines more DSP memory:
+
+  Category | DSP memory freed
+  ---------+--------------------------
+  TRX      | 11,029 words (shown 33K)
+  EFM      |  1,582 words (shown 5K)
+  P-I      | 14,837 words (shown 44K)
+
+On MKI, the memory P-I frees is faster than the user machine memory. User
+machines are placed there first, so a Kit can run more demanding machines.
+
+To free or load a category, open MACHINE MGR and select INTERNAL > at the
+end of the slot list. It lists the three categories with the DSP memory
+each holds in KB (as machine sizes are shown), or -- once it is freed.
+Choose FREE or LOAD in the MODE column and press [YES]. [FUNCTION] +
+[CLEAR] also frees the selected category. Select USR > to return to the
+slots. To quickly toggle between INTERNAL and USR, press [SCALE].
+
+The setting is stored with the bank. It is applied whenever the bank is
+loaded, without a restart.
+
+A freed category's machines go silent. Kits keep them, but their tracks
+play nothing until the category is loaded again. EDIT KIT hides them;
+user machines whose names begin with TRX, EFM or P-I stay listed in that
+category.
+
+A category cannot be loaded while the bank's user machines need its
+memory. MACHINE MGR shows DSP FULL until enough user machines are erased.
 
 The USR Machine SYSEX transfer is described in MDX_MachineDumpProtocol.txt
 and the machine file format in MDX_MachineDumpStandard.txt.
@@ -327,8 +406,8 @@ RTIM values:
 
   Value | Interval     Value | Interval     Value | Interval
 -------------------------------------------------------------
-      0 | 1/384            5 | 1/48             10 | 1/8
-      1 | 1/192            6 | 1/32             11 | 1/6
+      0 | 1/128            5 | 1/48             10 | 1/8
+      1 | 1/128            6 | 1/32             11 | 1/6
       2 | 1/128            7 | 1/24             12 | 1/4
       3 | 1/96             8 | 1/16             13 | 1/3
       4 | 1/64             9 | 1/12             14 | 1/2
@@ -456,6 +535,16 @@ User machine slots (c=1):
               79 | USR-14
               80 | USR-15
               81 | USR-16
+
+With +Drive, slots 17-48 continue the sequence:
+
+  Machine number | Machine
+  ---------------+-----------
+              82 | USR-17
+             ... | ...
+             113 | USR-48
+
+USR-n is machine number 65 + n.
 
 All other Appendix C machine numbers are unchanged.
 

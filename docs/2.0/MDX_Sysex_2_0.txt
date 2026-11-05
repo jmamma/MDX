@@ -48,8 +48,8 @@ RTIM values:
 
   Value | Interval     Value | Interval     Value | Interval
 -------------------------------------------------------------
-      0 | 1/384            5 | 1/48             10 | 1/8
-      1 | 1/192            6 | 1/32             11 | 1/6
+      0 | 1/128            5 | 1/48             10 | 1/8
+      1 | 1/128            6 | 1/32             11 | 1/6
       2 | 1/128            7 | 1/24             12 | 1/4
       3 | 1/96             8 | 1/16             13 | 1/3
       4 | 1/64             9 | 1/12             14 | 1/2
@@ -95,8 +95,9 @@ kit settings.
 
 ** Song and Global dump additions **
 
-Song dumps retain row fills, and Global dumps retain pattern-tempo and
-MIDI-channel mode settings.
+Song dumps retain row fills, and Global dumps retain pattern-tempo,
+MIDI-channel mode and REC QUANT settings. Global revision $01 dumps can
+still be received; REC QUANT is then ON.
 
 Extended fields are not included in LEGACY dumps.
 
@@ -202,6 +203,6 @@ All other Appendix C machine numbers are unchanged.
   Kit     | $52     | $41          | $01
   Pattern | $67     | $40          | $01
   Song    | $69     | $40          | $01
-  Global  | $50     | $40          | $01
+  Global  | $50     | $40          | $02
 
 Pattern and Kit field layouts are documented in MDX_PatternKit_2_0.txt.
