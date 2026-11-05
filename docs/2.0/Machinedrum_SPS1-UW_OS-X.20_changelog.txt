@@ -25,10 +25,10 @@ New
   to see the Kit's total DSP load as a percentage.
 
 - The MDS specification is now version 1.1. It gives each USR Machine
-  separate DSP load figures for MKI and MKII. Existing USR Machines still
-  load, but their DSP load is only an estimate and can read too high or too
-  low. A Kit may show "DSP LIMIT" too early, or pass the check and still
-  overload the DSP. Update them with the certifier in the mds-tools
+  separate DSP cycle figures for MKI and MKII. Existing USR Machines still
+  load, but their DSP usage is only an estimate and can read too high or too
+  low. A Kit may show "DSP LIMIT" too early, or pass the safety check and
+  still overload the DSP. Update them with the certifier in the mds-tools
   repository.
 
 - The bundled USR Machines have improved sound and performance.
