@@ -34,10 +34,8 @@ New
 - The bundled USR Machines have improved sound and performance.
   Send them to the MD again to apply the updates.
 
-- Six new USR Machines: TXZ-SC, TXZ-CE, TXZ-SS, TXZ-BB, TXZ-EO and TXZ-FL.
-
-- A new TX6 drum set of six USR Machines: TX6-BD, TX6-SD, TX6-XT, TX6-CH,
-  TX6-OH and TX6-CY.
+- Twelve new USR Machines: TXZ-SC, TXZ-CE, TXZ-SS, TXZ-BB, TXZ-EO, TXZ-FL,
+  TX6-BD, TX6-SD, TX6-XT, TX6-CH, TX6-OH and TX6-CY.
 
 - REC QUANT in Global SYNC > SEQUENCER, below TEMPO (formerly TEMPO
   CHANGE). Set it to OFF to keep the timing of trigs recorded live, as
